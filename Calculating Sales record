@@ -1,0 +1,21 @@
+WITH product_info AS (
+	SELECT p.product_name, p.category,
+	ROUND(SUM(o.sales)::numeric, 2) AS product_total_sales, 
+	ROUND(SUM(o.profit)::numeric, 2) AS product_total_profit
+	FROM products AS p
+	LEFT JOIN orders AS o
+	ON p.product_id = o.product_id
+	GROUP BY p.product_name, p.category
+),
+
+	top_products AS(
+SELECT 
+	RANK() OVER(PARTITION BY category ORDER BY 	
+	product_total_sales DESC) AS product_rank, 
+	product_name, category,	product_total_sales, 
+	product_total_profit
+	FROM product_info
+)
+SELECT *
+FROM top_products
+WHERE product_rank <= 5;
