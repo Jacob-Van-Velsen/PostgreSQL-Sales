@@ -1,0 +1,19 @@
+WITH missing_quanities AS (
+	SELECT product_id, discount, market, region, quantity, sales
+	FROM orders
+	WHERE quantity IS NULL
+),
+
+unit_prices AS(
+	SELECT product_id, AVG(CAST(sales / quantity AS numeric)) AS 
+	unit_price
+	FROM orders
+	WHERE quantity IS NOT NULL
+	GROUP BY product_id
+)
+
+SELECT DISTINCT m.*, 
+	ROUND(CAST(m.sales AS NUMERIC) / u.unit_price, 0) AS calculated_quantity
+FROM missing_quanities AS m
+INNER JOIN unit_prices AS u
+ON m.product_id = u.product_id
